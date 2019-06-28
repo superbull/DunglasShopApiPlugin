@@ -45,6 +45,27 @@
             </parameter>
         </parameter>
 
+        <parameter key="sylius_shop_api_plugin.query_bus.middleware" type="collection">
+            <parameter type="collection">
+                <parameter key="id">add_bus_name_stamp_middleware</parameter>
+                <parameter key="arguments" type="collection">
+                    <parameter>sylius_shop_api_plugin.query_bus</parameter>
+                </parameter>
+            </parameter>
+            <parameter type="collection">
+                <parameter key="id">dispatch_after_current_bus</parameter>
+            </parameter>
+            <parameter type="collection">
+                <parameter key="id">failed_message_processing_middleware</parameter>
+            </parameter>
+            <parameter type="collection">
+                <parameter key="id">send_message</parameter>
+            </parameter>
+            <parameter type="collection">
+                <parameter key="id">handle_message</parameter>
+            </parameter>
+        </parameter>
+
         <parameter key="sylius_shop_api_plugin.email_bus.middleware" type="collection">
             <parameter type="collection">
                 <parameter key="id">add_bus_name_stamp_middleware</parameter>
@@ -71,13 +92,22 @@
         <defaults public="false" />
 
         <service id="sylius_shop_api_plugin.command_bus"
-                 class="Symfony\Component\Messenger\MessageBus">
+            class="Symfony\Component\Messenger\MessageBus"
+        >
+            <argument type="collection" />
+            <tag name="messenger.bus" />
+        </service>
+
+        <service id="sylius_shop_api_plugin.query_bus"
+            class="Symfony\Component\Messenger\MessageBus"
+        >
             <argument type="collection" />
             <tag name="messenger.bus" />
         </service>
 
         <service id="sylius_shop_api_plugin.email_bus"
-                 class="Symfony\Component\Messenger\MessageBus">
+            class="Symfony\Component\Messenger\MessageBus"
+        >
             <argument type="collection" />
             <tag name="messenger.bus" />
         </service>

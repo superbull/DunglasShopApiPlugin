@@ -6,15 +6,22 @@ namespace Sylius\ShopApiPlugin\DataPersister;
 
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
 use Sylius\ShopApiPlugin\Request\CommandRequestInterface;
+use Sylius\ShopApiPlugin\Request\QueryRequestInterface;
+use Symfony\Component\Messenger\HandleTrait;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 final class CommandRequestDataPersister implements DataPersisterInterface
 {
-    private $commandBus;
+    use HandleTrait;
 
-    public function __construct(MessageBusInterface $commandBus)
+    private $commandBus;
+    private $queryBus;
+
+    public function __construct(MessageBusInterface $commandBus, MessageBusInterface $queryBus)
     {
         $this->commandBus = $commandBus;
+        $this->queryBus = $queryBus;
+        $this->messageBus = $queryBus; // required by HandleTrait
     }
 
     /**
@@ -28,21 +35,34 @@ final class CommandRequestDataPersister implements DataPersisterInterface
     /**
      * {@inheritdoc}
      */
-    public function persist($data)
+    public function persist($data): object
     {
-        $this->handleCommand($data);
+        if (!$data instanceof CommandRequestInterface) {
+            throw new \LogicException(sprintf('Expected data to be "%s".', CommandRequestInterface::class));
+        }
+
+        $this->commandBus->dispatch($data->getCommand());
+
+        if ($data instanceof QueryRequestInterface) {
+            $data = $this->handle($data->getQuery());
+
+            if (null === $data) {
+                throw new \UnexpectedValueException('Query result must not be null.');
+            }
+        }
+
+        return $data;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function remove($data)
+    public function remove($data): void
     {
-        $this->handleCommand($data);
-    }
+        if (!$data instanceof CommandRequestInterface) {
+            throw new \LogicException(sprintf('Expected data to be "%s".', CommandRequestInterface::class));
+        }
 
-    private function handleCommand(CommandRequestInterface $data)
-    {
         $this->commandBus->dispatch($data->getCommand());
     }
 }

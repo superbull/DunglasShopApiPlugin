@@ -7,21 +7,20 @@ namespace Sylius\ShopApiPlugin\Request\Cart;
 use Ramsey\Uuid\Uuid;
 use Sylius\ShopApiPlugin\Command\Cart\PickupCart;
 use Sylius\ShopApiPlugin\Command\CommandInterface;
+use Sylius\ShopApiPlugin\Query\CartByToken;
+use Sylius\ShopApiPlugin\Query\QueryInterface;
 use Sylius\ShopApiPlugin\Request\CommandRequestInterface;
-use Symfony\Component\HttpFoundation\Request;
+use Sylius\ShopApiPlugin\Request\QueryRequestInterface;
 
-class PickupCartRequest implements CommandRequestInterface
+class PickupCartRequest implements CommandRequestInterface, QueryRequestInterface
 {
-    /** @var string */
     protected $token;
+    protected $channelCode;
 
-    /** @var string */
-    protected $channel;
-
-    public function __construct(Request $request)
+    public function __construct(string $channelCode = '')
     {
         $this->token = Uuid::uuid4()->toString();
-        $this->channel = $request->attributes->get('channelCode');
+        $this->channelCode = $channelCode;
     }
 
     /**
@@ -31,6 +30,26 @@ class PickupCartRequest implements CommandRequestInterface
      */
     public function getCommand(): CommandInterface
     {
-        return new PickupCart($this->token, $this->channel);
+        return new PickupCart($this->token, $this->channelCode);
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @return CartByToken
+     */
+    public function getQuery(): QueryInterface
+    {
+        return new CartByToken($this->token);
+    }
+
+    public function getToken(): string
+    {
+        return $this->token;
+    }
+
+    public function getChannelCode(): string
+    {
+        return $this->channelCode;
     }
 }

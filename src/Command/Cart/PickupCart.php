@@ -8,10 +8,7 @@ use Sylius\ShopApiPlugin\Command\CommandInterface;
 
 class PickupCart implements CommandInterface
 {
-    /** @var string */
     protected $orderToken;
-
-    /** @var string */
     protected $channelCode;
 
     public function __construct(string $orderToken, string $channelCode)
